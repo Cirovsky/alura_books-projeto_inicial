@@ -169,10 +169,8 @@ function filtrarDisponiblidade() {
     }
     if(estado.ordem){
         listaDisponiveis = ordernarLivros(listaDisponiveis);
-        console.log(listaDisponiveis);
         reexibirLivros(listaDisponiveis);
     }else{
-        console.log(listaDisponiveis);
         reexibirLivros(listaDisponiveis);
     }
 }
@@ -201,7 +199,3 @@ function ordernarLivros(listaLivros) {
 /* chamadas a priori */
 
 const lista = getBuscarLivros();
-
-/* backlog:
-    E - conflito entre exibir em ordem e exibir disponível
-*/
