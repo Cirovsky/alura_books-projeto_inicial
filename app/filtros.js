@@ -62,26 +62,18 @@ function filtrarLivros() {
     let listaFiltrada;
     if (estado.filtros.length > 0) {
         estado.livrosFiltrados = estado.livros.filter(livro => {
-            if (estado.filtros.includes(livro.categoria)) {
-                return livro;
-            }
+                return estado.filtros.includes(livro.categoria);
         })
         estado.livrosFiltradosDisponiveis = estado.livrosFiltrados.filter(livro => {
-            if (livro.quantidade > 0) {
-                return livro;
-            }
+            return livro.quantidade > 0;
         })
         if (estado.disponivel) {
             listaFiltrada = estado.livrosFiltradosDisponiveis.filter(livro => {
-                if (estado.filtros.includes(livro.categoria)) {
-                    return livro;
-                }
+                return estado.filtros.includes(livro.categoria);
             })
         } else {
             listaFiltrada = estado.livrosFiltrados.filter(livro => {
-                if (estado.filtros.includes(livro.categoria)) {
-                    return livro;
-                }
+                return estado.filtros.includes(livro.categoria);
             })
         }
         if(estado.ordem){
@@ -138,7 +130,6 @@ function ordernarLivros(listaLivros) {
             }
             return 0;
         })
-        console.log(listaOrdenada);
         return listaOrdenada;
 
     } else {
