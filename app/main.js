@@ -34,18 +34,33 @@ selecionaFiltros.addEventListener("click", (e) => {
 
     if (e.target.dataset.disponivel == "") {
         estado.disponivel = estado.disponivel ? false : true;
-        estado.disponivel?
+        estado.disponivel ?
             e.target.classList.add("filtro-selecionado")
-            :e.target.classList.remove("filtro-selecionado");
+            : e.target.classList.remove("filtro-selecionado");
         filtrarDisponiblidade();
     }
 
     if (e.target.dataset.ordem == "") {
         estado.ordem = estado.ordem == false ? true : false;
-        estado.ordem?
+        estado.ordem ?
             e.target.classList.add("filtro-selecionado")
-            :e.target.classList.remove("filtro-selecionado");
-        ordernarLivros();
+            : e.target.classList.remove("filtro-selecionado");
+        let listaLivros;
+        const filtrado = estado.filtros.length > 0 ? true : false;
+        if (filtrado && estado.disponivel) {
+            listaLivros = estado.livrosFiltradosDisponiveis;
+        }
+        if (filtrado && !estado.disponivel) {
+            listaLivros = estado.livrosFiltrados;
+        }
+        if (!filtrado && estado.disponivel) {
+            listaLivros = estado.livrosDisponiveis;
+        }
+        if (!filtrado && !estado.disponivel) {
+            listaLivros = estado.livros;
+        }
+        listaLivros = ordernarLivros(listaLivros);
+        reexibirLivros(listaLivros);
     }
 
 })
@@ -70,6 +85,11 @@ function criarElLivro(livro) {
   </div>`;
 }
 
+function reexibirLivros(listaLivros){
+    listaElLivros.innerHTML = "";
+    listaLivros.forEach(livro => criarElLivro(livro));
+}
+
 /* funções para dinamica da página */
 
 async function getBuscarLivros() {
@@ -90,7 +110,7 @@ async function getBuscarLivros() {
 }
 
 function filtrarLivros() {
-    listaElLivros.innerHTML = "";
+    let listaFiltrada;
     if (estado.filtros.length > 0) {
         estado.livrosFiltrados = estado.livros.filter(livro => {
             if (estado.filtros.includes(livro.categoria)) {
@@ -103,63 +123,64 @@ function filtrarLivros() {
             }
         })
         if (estado.disponivel) {
-            estado.livrosFiltradosDisponiveis.forEach(livro => {
+            listaFiltrada = estado.livrosFiltradosDisponiveis.filter(livro => {
                 if (estado.filtros.includes(livro.categoria)) {
-                    criarElLivro(livro);
+                    return livro;
                 }
             })
         } else {
-            estado.livrosFiltrados.forEach(livro => {
+            listaFiltrada = estado.livrosFiltrados.filter(livro => {
                 if (estado.filtros.includes(livro.categoria)) {
-                    criarElLivro(livro);
+                    return livro;
                 }
             })
         }
-        console.log(estado.livrosFiltrados);
+        if(estado.ordem){
+            listaFiltrada = ordernarLivros(listaFiltrada);
+            reexibirLivros(listaFiltrada);
+        }else{
+            reexibirLivros(listaFiltrada);
+        }
     } else {
-        estado.livros.forEach(livro => criarElLivro(livro));
+        if (estado.ordem){
+            listaFiltrada = estado.livros.map(livros => livros);
+            listaFiltrada = ordernarLivros(listaFiltrada);
+            reexibirLivros(listaFiltrada);
+        }else{
+            reexibirLivros(estado.livros);
+        }
     }
 }
 
 function filtrarDisponiblidade() {
-    listaElLivros.innerHTML = "";
+    let listaDisponiveis;
     if (estado.disponivel) {
         if (estado.filtros.length > 0) {
-            estado.livrosFiltradosDisponiveis.forEach(livro => criarElLivro(livro));
-            console.log(estado.livrosFiltradosDisponiveis);
+            listaDisponiveis = estado.livrosFiltradosDisponiveis.map(livro => livro);
         } else {
-            estado.livrosDisponiveis.forEach(livro => criarElLivro(livro));
-            console.log(estado.livrosDisponiveis);
+            listaDisponiveis = estado.livrosDisponiveis.map(livro => livro);
         }
     } else {
         if (estado.filtros.length > 0) {
-            estado.livrosFiltrados.forEach(livro => criarElLivro(livro));
+            listaDisponiveis = estado.livrosFiltrados.map(livro => livro);
         } else {
-            estado.livros.forEach(livro => criarElLivro(livro));
+            listaDisponiveis = estado.livros.map(livro => livro);
         }
+    }
+    if(estado.ordem){
+        listaDisponiveis = ordernarLivros(listaDisponiveis);
+        console.log(listaDisponiveis);
+        reexibirLivros(listaDisponiveis);
+    }else{
+        console.log(listaDisponiveis);
+        reexibirLivros(listaDisponiveis);
     }
 }
 
-function ordernarLivros() {
-    let listaLivros;
-    let listaOrdenada;
-    const filtrado = estado.filtros.length > 0 ? true : false;
-    if (filtrado && estado.disponivel) {
-        listaLivros = estado.livrosFiltradosDisponiveis;
-    }
-    if (filtrado && !estado.disponivel) {
-        listaLivros = estado.livrosFiltrados;
-    }
-    if (!filtrado && estado.disponivel) {
-        listaLivros = estado.livrosDisponiveis;
-    }
-    if (!filtrado && !estado.disponivel) {
-        listaLivros = estado.livros;
-        console.log(listaLivros);
-    }
+function ordernarLivros(listaLivros) {
+
     listaOrdenada = listaLivros.map(livro => livro);
-    console.log(listaOrdenada);
-    listaElLivros.innerHTML = "";
+
     if (estado.ordem) {
         listaOrdenada.sort(function (a, b) {
             if (a.preco > b.preco) {
@@ -170,12 +191,10 @@ function ordernarLivros() {
             }
             return 0;
         })
-        listaOrdenada.forEach(livro => criarElLivro(livro));
-        console.log(listaOrdenada);
+        return listaOrdenada;
 
     } else {
-        console.log(listaLivros);
-        listaLivros.forEach(livro => criarElLivro(livro));
+        return listaLivros;
     }
 }
 
