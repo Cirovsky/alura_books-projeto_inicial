@@ -9,6 +9,14 @@ const estado = {
     ordem: false,
 }
 
+/* negócio */
+function aplicarDesconto(livros){
+    const desconto = 0.3;
+    estado.livros = livros.map(livro =>{
+        return {... livro, preco: Number.parseFloat(((livro.preco) -((livro.preco) * desconto)).toFixed(2)) }
+    })
+}
+
 const endpointAPI = 'https://guilhermeonrails.github.io/casadocodigo/livros.json';
 
 const listaElLivros = document.querySelector("[data-lista-livros]");
@@ -94,10 +102,14 @@ function reexibirLivros(listaLivros){
 
 async function getBuscarLivros() {
     const res = await fetch(endpointAPI);
-    estado.livros = await res.json();
-    if (estado.livros.erro) {
+    const livros = await res.json();
+    estado.livros = livros;
+    if (livros.erro) {
         throw Error('não foi possível conectarmos com a API');
     } else {
+        console.log(estado.livros);
+        aplicarDesconto(estado.livros);
+        console.log(estado.livros);
         estado.livros.forEach(livro => {
             criarElLivro(livro);
         })
@@ -189,9 +201,11 @@ function ordernarLivros(listaLivros) {
             }
             return 0;
         })
+        console.log(listaOrdenada);
         return listaOrdenada;
 
     } else {
+        
         return listaLivros;
     }
 }
