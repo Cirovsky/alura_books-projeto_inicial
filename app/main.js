@@ -17,9 +17,7 @@ async function getBuscarLivros() {
     if (livros.erro) {
         throw Error('não foi possível conectarmos com a API');
     } else {
-        console.log(estado.livros);
         aplicarDesconto(estado.livros);
-        console.log(estado.livros);
         estado.livros.forEach(livro => {
             criarElLivro(livro);
         })
