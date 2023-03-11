@@ -3,11 +3,13 @@
 :root {
   --bg-color: #ffffff;
   --button-color: #326589;
+  --button-selected: #dbca69;
   --text-title-color: #fc6621;
   --text-description-color: #fc6621;
   --text-price-color: #002f52;
   --text-author-color: #858585;
   --text-tag-color: #9c9c9c;
+  --text-contrast-button: rgb(59, 61, 82);
 }
 
 body {
@@ -60,6 +62,11 @@ body {
   color: #cecdcd;
   border-radius: 10px;
   border-bottom: 2px solid var(--text-description-color);
+}
+
+.filtro-selecionado{
+  background-color: var(--button-selected);
+  color: var(--text-contrast-button);
 }
 
 .livros {

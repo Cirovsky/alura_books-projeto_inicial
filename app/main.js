@@ -1,6 +1,13 @@
-let livros = [];
-let livrosFiltrados = [];
-let filtroAtual = false;
+/* variáveis de maior escopo */
+const estado = {
+    livros: [],
+    filtros: [],
+    livrosFiltrados: "",
+    livrosDisponiveis: "",
+    livrosFiltradosDisponiveis: "",
+    disponivel: false,
+    ordem: false,
+}
 
 const endpointAPI = 'https://guilhermeonrails.github.io/casadocodigo/livros.json';
 
@@ -8,22 +15,32 @@ const listaElLivros = document.querySelector("[data-lista-livros]");
 
 /* filtros */
 
-const listaFiltros = document.querySelectorAll("[data-filtro]");
+const selecionaFiltros = document.querySelector("[data-filtros]");
 
-listaFiltros.forEach(filtro => {
-    filtro.addEventListener("click", () => {
-        listaElLivros.innerHTML = "";
-        getBuscarLivros(filtro.dataset.filtro);
-    });
-});
+selecionaFiltros.addEventListener("click", (e) => {
+    const filtro = e.target.dataset.filtro;
+    if (e.target.dataset.filtro) {
+        if (estado.filtros.includes(filtro)) {
+            const index = estado.filtros.indexOf(filtro);
+            estado.filtros.splice(index, 1);
+            filtrarLivros();
+        } else {
+            estado.filtros.push(filtro);
+            filtrarLivros();
+        }
+    }
 
-/* ordenação */
+    if (e.target.dataset.disponivel == "") {
+        estado.disponivel = estado.disponivel == false ? true : false;
+        filtrarDisponiblidade();
+    }
 
-const ordenarPreco = document.querySelector("[data-ordem-preco");
-ordenarPreco.addEventListener("click", () => {
-    ordernarLivros();
-});
+    if (e.target.dataset.ordem == "") {
+        estado.ordem = estado.ordem == false ? true : false;
+        ordernarLivros();
+    }
 
+})
 
 /* criar elementos */
 
@@ -45,87 +62,119 @@ function criarElLivro(livro) {
   </div>`;
 }
 
-/* função para dinamica da página */
+/* funções para dinamica da página */
 
-async function getBuscarLivros(filtro = "vazio") {
+async function getBuscarLivros() {
     const res = await fetch(endpointAPI);
-    livros = await res.json();
-    if (livros.erro) {
+    estado.livros = await res.json();
+    if (estado.livros.erro) {
         throw Error('não foi possível conectarmos com a API');
     } else {
-        if (filtro == "vazio") {
-            filtroAtual = false;
-            livros.forEach(livro => {
+        estado.livros.forEach(livro => {
+            criarElLivro(livro);
+        })
+        estado.livrosDisponiveis = estado.livros.filter(livro => {
+            if (livro.quantidade > 0) {
                 criarElLivro(livro);
+            }
+        })
+    }
+}
+
+function filtrarLivros() {
+    listaElLivros.innerHTML = "";
+    if (estado.filtros.length > 0) {
+        estado.livrosFiltrados = estado.livros.filter(livro => {
+            if (estado.filtros.includes(livro.categoria)) {
+                return livro;
+            }
+        })
+        estado.livrosFiltradosDisponiveis = estado.livrosFiltrados.filter(livro => {
+            if (livro.quantidade > 0) {
+                return livro;
+            }
+        })
+        if (estado.disponivel) {
+            estado.livrosFiltradosDisponiveis.forEach(livro => {
+                if (estado.filtros.includes(livro.categoria)) {
+                    criarElLivro(livro);
+                }
             })
         } else {
-            filtroAtual = true;
-            if (filtro == "disponivel") {
-                livrosFiltrados = livros.filter(livro => {
-                    if (livro.quantidade > 0) {
-                        return livro;
-                    }
-                });
-            } else {
-                livrosFiltrados = livros.filter(livro => {
-                    if (livro.categoria == filtro) {
-                        return livro;
-                    }
-                });
-            }
-            livrosFiltrados.forEach(livro => {
-                criarElLivro(livro);
+            estado.livrosFiltrados.forEach(livro => {
+                if (estado.filtros.includes(livro.categoria)) {
+                    criarElLivro(livro);
+                }
             })
+        }
+        console.log(estado.livrosFiltrados);
+    } else {
+        estado.livros.forEach(livro => criarElLivro(livro));
+    }
+}
+
+function filtrarDisponiblidade() {
+    listaElLivros.innerHTML = "";
+    if (estado.disponivel) {
+        if (estado.filtros.length > 0) {
+            estado.livrosFiltradosDisponiveis.forEach(livro => criarElLivro(livro));
+            console.log(estado.livrosFiltradosDisponiveis);
+        } else {
+            estado.livrosDisponiveis.forEach(livro => criarElLivro(livro));
+            console.log(estado.livrosDisponiveis);
+        }
+    } else {
+        if (estado.filtros.length > 0) {
+            estado.livrosFiltrados.forEach(livro => criarElLivro(livro));
+        } else {
+            estado.livros.forEach(livro => criarElLivro(livro));
         }
     }
 }
 
-async function pesquisarLivro(titulo) {
-    const res = await fetch(endpointAPI);
-    const livros = await res.json();
-
-    if (livros.erro) {
-        throw Error('não foi possível conectarmos com a API');
-    } else {
-        livros.forEach(livro => {
-            if (livro.titulo == titulo) {
-
-            }
-        })
-
-    }
-
-}
-
 function ordernarLivros() {
-    if(filtroAtual){
-        const novaOrdemLivros = livrosFiltrados.sort(function (a,b) {
-            if(a.preco > b.preco){
+    let listaLivros;
+    let listaOrdenada;
+    const filtrado = estado.filtros.length > 0 ? true : false;
+    if (filtrado && estado.disponivel) {
+        listaLivros = estado.livrosFiltradosDisponiveis;
+    }
+    if (filtrado && !estado.disponivel) {
+        listaLivros = estado.livrosFiltrados;
+    }
+    if (!filtrado && estado.disponivel) {
+        listaLivros = estado.livrosDisponiveis;
+    }
+    if (!filtrado && !estado.disponivel) {
+        listaLivros = estado.livros;
+        console.log(listaLivros);
+    }
+    listaOrdenada = listaLivros.map(livro => livro);
+    console.log(listaOrdenada);
+    listaElLivros.innerHTML = "";
+    if (estado.ordem) {
+        listaOrdenada.sort(function (a, b) {
+            if (a.preco > b.preco) {
                 return 1;
             }
-            if(a.preco < b.preco){
-                return -1;
-            }
-            return 0;
-        });
-        listaElLivros.innerHTML = ""
-        novaOrdemLivros.forEach(livro => criarElLivro(livro));
-    }else{
-        const novaOrdemLivros = livros.sort(function (a,b) {
-            if(a.preco > b.preco){
-                return 1;
-            }
-            if(a.preco < b.preco){
+            if (a.preco < b.preco) {
                 return -1;
             }
             return 0;
         })
-        listaElLivros.innerHTML = ""
-        novaOrdemLivros.forEach(livro => criarElLivro(livro));
+        listaOrdenada.forEach(livro => criarElLivro(livro));
+        console.log(listaOrdenada);
+
+    } else {
+        console.log(listaLivros);
+        listaLivros.forEach(livro => criarElLivro(livro));
     }
 }
-
 
 /* chamadas a priori */
 
 const lista = getBuscarLivros();
+
+/* backlog:
+    E - conflito entre exibir em ordem e exibir disponível
+*/
