@@ -22,21 +22,29 @@ selecionaFiltros.addEventListener("click", (e) => {
     if (e.target.dataset.filtro) {
         if (estado.filtros.includes(filtro)) {
             const index = estado.filtros.indexOf(filtro);
+            e.target.classList.remove("filtro-selecionado");
             estado.filtros.splice(index, 1);
             filtrarLivros();
         } else {
             estado.filtros.push(filtro);
+            e.target.classList.add("filtro-selecionado");
             filtrarLivros();
         }
     }
 
     if (e.target.dataset.disponivel == "") {
-        estado.disponivel = estado.disponivel == false ? true : false;
+        estado.disponivel = estado.disponivel ? false : true;
+        estado.disponivel?
+            e.target.classList.add("filtro-selecionado")
+            :e.target.classList.remove("filtro-selecionado");
         filtrarDisponiblidade();
     }
 
     if (e.target.dataset.ordem == "") {
         estado.ordem = estado.ordem == false ? true : false;
+        estado.ordem?
+            e.target.classList.add("filtro-selecionado")
+            :e.target.classList.remove("filtro-selecionado");
         ordernarLivros();
     }
 
@@ -75,7 +83,7 @@ async function getBuscarLivros() {
         })
         estado.livrosDisponiveis = estado.livros.filter(livro => {
             if (livro.quantidade > 0) {
-                criarElLivro(livro);
+                return livro;
             }
         })
     }
